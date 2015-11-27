@@ -47,10 +47,10 @@ def read_mnist_label(data_type='train'):
 
 # In[28]:
 
-labels = read_mnist_label()
-# Plot histogram
-hist = np.histogram(labels,np.arange(11))
-plt.plot(hist[1][0:-1],hist[0])
+#labels = read_mnist_label()
+## Plot histogram
+#hist = np.histogram(labels,np.arange(11))
+#plt.plot(hist[1][0:-1],hist[0])
 
 
 # In[34]:
@@ -86,9 +86,9 @@ def read_mnist_data(data_type='train'):
 
 # In[31]:
 
-import matplotlib.cm as cm
-images = read_mnist_data()
-plt.imshow(images[0], cmap=cm.Greys_r)
+#import matplotlib.cm as cm
+#images = read_mnist_data()
+#plt.imshow(images[0], cmap=cm.Greys_r)
 
 
 # In[35]:
