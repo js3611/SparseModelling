@@ -1,34 +1,15 @@
-
 # coding: utf-8
-
-# In[1]:
-
 import numpy as np
 import numpy.linalg as la
-import matplotlib.pyplot as plt
-
-
-# get_ipython().magic(u'matplotlib inline')
-
-
-# ##### Helpers
-
-# In[18]:
 
 def sqnorm(x):
     return np.dot(x,x)
 
 
 # ## Sparse Reconstruction with $l_0$-penalty:
-# 
 # $$\min_{\alpha \in \mathbf{R}^P} ||x - D \alpha||_2^2 \quad s.t. ||\alpha||_0 \leq k$$
-
 # ### Coordinate Descent Algorithms
-
 # #### Matching Pursuit
-
-# In[227]:
-
 def matching_pursuit(D, x, k_max=10, eps=1e-10, max_itr=1000):
     itr     = 0    
     m, p    = D.shape
@@ -50,34 +31,7 @@ def matching_pursuit(D, x, k_max=10, eps=1e-10, max_itr=1000):
     return (alpha, obj_values)
 
 
-# In[228]:
-
-m = 160              # dimension of each atom
-p = 100              # number of atoms
-rand = np.random.rand
-D = rand(m*p).reshape(m,p)    # dictionary
-x = rand(m)
-# normalise by column
-D = D / la.norm(D,axis=0)
-x = x / la.norm(x)
-
-alpha, obj_values = matching_pursuit(D, x, k_max=3, max_itr=100)
-s = "sparsity: {}".format(len(np.nonzero(alpha)[0]))
-plt.subplot(3, 1, 1)
-plt.title(s)
-plt.plot(np.array(obj_values))
-
-alpha, obj_values = matching_pursuit(D, x, k_max=5, max_itr=100)
-s2 = "sparsity: {}".format(len(np.nonzero(alpha)[0]))
-plt.subplot(3, 1, 2)
-plt.title(s2)
-plt.plot(np.array(obj_values))
-
-
 # #### Orthogonal Matching Pursuit (OMP)
-
-# In[229]:
-
 def orthogonal_matching_pursuit(D, x, k_max=10, eps=1e-10, max_itr=1000):
     itr     = 0
     m, p    = D.shape
@@ -116,41 +70,6 @@ def orthogonal_matching_pursuit(D, x, k_max=10, eps=1e-10, max_itr=1000):
         obj_values.append(delta)
     
     return (alpha, obj_values)
-
-
-# In[231]:
-
-m = 10              # dimension of each atom
-p = 5              # number of atoms
-rand = np.random.rand
-D = rand(m*p).reshape(m,p)    # dictionary
-x = rand(m)
-# normalise by column
-D = D / np.linalg.norm(D,axis=0)
-x = x / np.linalg.norm(x)
-
-alpha, obj_values = orthogonal_matching_pursuit(D, x, k_max=3)
-s = "sparsity: {}".format(len(np.nonzero(alpha)[0]))
-plt.subplot(3, 1, 1)
-plt.title(s)
-plt.plot(np.array(obj_values))
-
-alpha, obj_values = orthogonal_matching_pursuit(D, x, k_max=4)
-s2 = "sparsity: {}".format(len(np.nonzero(alpha)[0]))
-plt.subplot(3, 1, 2)
-plt.title(s2)
-plt.plot(np.array(obj_values))
-
-
-# Q. It still monotonically decreases like in MP. However, in MP, the rate of convergence also monotonically decreased (gave me a nice curve for decrease in obj function) but not here. I guess orthogonal projection isn't "greedy" in that sense? 
-
-# ### Gradient Descent Techniques
-
-# Solves $$\min_{\alpha \in \mathbf{R}^P} ||x - D \alpha||_2^2 + \lambda ||\alpha||_0$$
-
-# ### Iterative hard-thresholding
-
-# In[34]:
 
 import heapq
 
@@ -195,36 +114,3 @@ def iterative_hard_thresholding(D, x, k_max=None, lmbda=None, mu=0.01, alpha=Non
         obj_values.append(sqnorm(x - np.dot(D,alpha)))
             
     return alpha, obj_values
-
-
-# In[49]:
-
-m = 10                     # dimension of each atom
-p = 50                      # number of atoms
-rand = np.random.rand
-D = rand(m*p).reshape(m,p) # dictionary
-x = rand(m)
-
-# normalise by column
-D = D / np.linalg.norm(D,axis=0)
-x = x / np.linalg.norm(x)
-
-alpha, obj_values = iterative_hard_thresholding(D, x, k_max=10)
-s = "sparsity: {}".format(len(np.nonzero(alpha)[0]))
-plt.subplot(3, 1, 1)
-plt.title(s)
-plt.plot(np.array(obj_values))
-
-alpha, obj_values = iterative_hard_thresholding(D, x, lmbda=0.003, mu=0.1)
-s2 = "sparsity: {}".format(len(np.nonzero(alpha)[0]))
-plt.subplot(3, 1, 2)
-plt.title(s2)
-plt.plot(np.array(obj_values))
-
-
-# How to pick lambda and the stepsize mu?
-
-# In[ ]:
-
-
-

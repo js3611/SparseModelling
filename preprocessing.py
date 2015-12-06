@@ -2,12 +2,17 @@ import numpy as np
 import numpy.linalg as linalg
 
 def centering(X):
+    '''
+    Removes the mean intensity of the image from each image
+    :param X: [m,n], image in m dimension, n samples
+    :return: np.dot(np.identity(m) - np.ones([m,m]) / float(m) , X)
+    '''
     # X: [m,n]
     m, n = X.shape
     # mathematically
-    # return np.dot(np.identity(m) - np.ones([m,m]) / float(m) , X) 
+    # return
     # prob faster:
-    return  X - np.mean(X, axis=0)
+    return X - np.mean(X, axis=0)
 
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.299, 0.587, 0.144])
@@ -19,7 +24,6 @@ def contrast_normalization(X, c=0.2):
 def whitening(X, eps=10e-6):
     # X = [m,n]
     # returns transformation for mapping
-    # TODO: demean the data
     X = X - np.array([np.mean(X, axis=1)]).T
     covX = np.dot(X,X.T) / len(X)
     

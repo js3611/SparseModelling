@@ -329,29 +329,34 @@ def k_svd(X, D0=np.array([]), mu=None, T=100):
         
         # Compute A
         for i in xrange(n):
-            A[:,i] = OMP(D, X[:,i], mu)[0]
-                    
+            A[:, i] = OMP(D, X[:, i], mu)[0]
+
         # Compute D and A (nonzero coeffs of A)
         for j in xrange(p):
-            # define set of indices of X which uses D[:,j] for sparse encoding
-            indices = [i for i, v in enumerate(A[j,:]) if abs(v) < eps]
-            
-            S = np.zeros([n, len(indices)])
-            for i, idx in enumerate(indices):
-                S[idx, i] = 1
-            
-            # error matrix
-            E = X - np.dot(D, A) + np.outer(D[:,j],A[j,:]) 
-            
-            # Sparsify
-            E_sparse = np.dot(E, S) 
-            
-            # compute the svd to get d and a
-            u, s, v = linalg.svd(E_sparse, compute_uv=True)
+            # get indices of x in X which use the dictionary atom D[:,j]
+            # for its sparse encoding (i.e. x = sum_k D[:,k]*a_k and a_j != 0)
+            # indices = [i for i, v in enumerate(A[j, :]) if abs(v) < eps]
+            indices = [i for i, v in enumerate(A[j, :]) if abs(v) > eps]
 
-            # update
-            D[:,j] = u[:,0] 
-            A[j,indices] = s[0] * v[0,:]
+            if len(indices) > 0:
+                print j, indices
+
+                S = np.zeros([n, len(indices)])
+                for i, idx in enumerate(indices):
+                    S[idx, i] = 1
+
+                # error matrix
+                E = X - np.dot(D, A) + np.outer(D[:, j], A[j, :])
+
+                # Sparsify
+                E_sparse = np.dot(E, S)
+
+                # compute the svd to get d and a
+                u, s, v = linalg.svd(E_sparse, compute_uv=True)
+
+                # update
+                D[:, j] = u[:, 0]
+                A[j, indices] = s[0] * v[0, :]
                     
     return D
 

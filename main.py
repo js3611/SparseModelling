@@ -1,19 +1,15 @@
-
-# coding: utf-8
-
-# In[1]:
-
-import numpy as np
-import numpy.random as random
-import numpy.linalg as linalg
 import matplotlib.pyplot as plt
-from ReadMNIST import read_mnist, read_mnist_data
 from dictionary_learning import k_svd, stochastic_gradient_descent
+from l0_optimisations import orthogonal_matching_pursuit as OMP
+from preprocessing import *
+from dictionaries import get_dct_dictionary
+import pickle
 
-# get_ipython().magic(u'matplotlib inline')
+'''
+Run dictionary on the entire image
+'''
 
-
-# In[2]:
+# Load MNIST DATA
 
 # data = read_mnist()
 # train, test = data
@@ -22,50 +18,64 @@ from dictionary_learning import k_svd, stochastic_gradient_descent
 
 # data = read_mnist_data('test')
 # test_x = data[0:10]
+# plt.imshow(train_x[0])
 
-# In[3]:
+# Load Small subset of MNIST data
 
-#plt.imshow(train_x[0])
-
-
-# In[8]:
-
-import pickle 
-
-pkl_file = open('sample_data.pkl','rb')
+pkl_file = open('sample_data.pkl', 'rb')
 data = pickle.load(pkl_file)
 pkl_file.close()
 
-# normalise by column
-X = data / linalg.norm(data, axis=0)
+# Preprocessing the data
 
+# normalise by column & demean
+X = centering(data)
+X = contrast_normalization(X)
 m, n = X.shape
 
-# n, row, col = test_x.shape
-# X = test_x.reshape(n, row*col)[0:10].T
-# print X.shape
+# Initialise the dictionary
+M = int(np.sqrt(m))
+dct_dictionary = get_dct_dictionary(M).T
 
-# In[9]:
+dict_elts = np.arange(0, m, 5)
+p = len(dict_elts)
+# p = m
+D = dct_dictionary[:, dict_elts]
+# p = 50
+# D = random.normal(size=[m, p])
+D /= linalg.norm(D, axis=0)      # normalise by column
 
-p = 10
-D = random.rand(m, p) 
-D = D / linalg.norm(D, axis=0)      # normalise by column
+print D.shape
 
-D = k_svd(X, D, mu=5, T=10)
+plt.figure(figsize=(10, 10))
+plt.subplot(2,1,1)
+vis = visualise_patches(D.T.reshape(p, M, M), (p/15,15), True)
+plt.imshow(vis, cmap=plt.get_cmap('gray'))
 
+# Perform KSVD
+D = k_svd(X, D, mu=10, T=10)
 
-# In[9]:
+vis = visualise_patches(D.T.reshape(p, M, M), (p/15,15), True)
+plt.subplot(2,1,2)
+plt.imshow(vis, cmap=plt.get_cmap('gray'))
 
+x = X[:, 1]
+alpha, err = OMP(D, x, k_max=10)
 
-bigMat = np.zeros((28, 28*p))
-for i in xrange(p):
-    bigMat[:, 28*i:28*(i+1)] = D[:,i].reshape(28,28)
+x_recon = np.dot(D, alpha).reshape(28, 28)
 
+print err[-1]
 plt.figure(0)
-plt.imshow(bigMat)
+plt.subplot(1, 3, 1)
+plt.imshow(x.reshape(28, 28), cmap=plt.get_cmap('gray'))
+plt.subplot(1, 3, 2)
+plt.bar(np.arange(p), alpha)
+plt.subplot(1, 3, 3)
+plt.imshow(x_recon, cmap=plt.get_cmap('gray'))
+
+plt.show()
 
 
-# In[ ]:
 
-
+#Visualise the learnt dictionary
 
