@@ -16,9 +16,10 @@
 import numpy as np
 import numpy.random as random
 import numpy.linalg as linalg
-import matplotlib.pyplot as plt
-from l1_optimisations import coordinate_descent, soft_threshold
-from l0_optimisations import orthogonal_matching_pursuit as OMP, iterative_hard_thresholding, matching_pursuit as MP
+
+from SparseModelling.optimisation.l1_optimisations import coordinate_descent, soft_threshold
+from l0_optimisations import orthogonal_matching_pursuit as OMP
+
 
 # get_ipython().magic(u'matplotlib inline')
 

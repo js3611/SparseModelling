@@ -1,9 +1,11 @@
-import matplotlib.pyplot as plt
-from dictionary_learning import k_svd, stochastic_gradient_descent
-from l0_optimisations import orthogonal_matching_pursuit as OMP
-from preprocessing import *
-from dictionaries import get_dct_dictionary
 import pickle
+
+import matplotlib.pyplot as plt
+
+from SparseModelling.dictionaries.dictionary_learning import k_svd
+from SparseModelling.optimisation.l0_optimisations import orthogonal_matching_pursuit as OMP
+from SparseModelling.preprocessing.preprocessing import *
+from dictionaries import get_dct_dictionary
 
 '''
 Run dictionary on the entire image
