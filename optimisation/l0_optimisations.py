@@ -1,6 +1,7 @@
 # coding: utf-8
 import numpy as np
 import numpy.linalg as la
+import scipy as sp
 import heapq
 
 
@@ -145,6 +146,7 @@ def OMP_Cholesky(D, x, n_sparsity=None, verbose=False):
     k = 0
     n = 1
     obj_values = []
+    I = []
     r = x
     D_orthogonal = np.zeros((m, n_sparsity))
     L_full = np.zeros((n_sparsity, n_sparsity))
@@ -153,34 +155,52 @@ def OMP_Cholesky(D, x, n_sparsity=None, verbose=False):
     alpha = np.dot(D.T, x)
     # alpha
 
+    # helper
+    orig_index = np.arange(0, p)
+
     error = sqnorm(r)
     while error > 10e-8 and k < n_sparsity:
+
         L = L_full[0:l, 0:l]
         # Find dictionary element with highest correlation to the residue
         residue_projection = np.abs(np.dot(D.T, r))
         j = np.argmax(residue_projection)
         d = D[:, j]
 
-        # update dictionary elements
-        D_orthogonal[:, k] = d
-        D = np.delete(D, j, 1)
-        D_I = D_orthogonal[:, 0:(k+1)]
-        
         if n > 1:
-            w = np.dot(la.inv(L), np.dot(D.T, d))
+            # print D.T.shape, d.shape, L.shape
+            w = sp.linalg.solve_triangular(L, np.dot(D_I.T, d))
             L_full[l, 0:l] = w.T
             L_full[l, l] = np.sqrt(1-np.dot(w, w))
             l += 1
             L = L_full[0:l, 0:l]
-        # compute sparse code via orthogonal projection
-        alpha = np.dot(la.inv(np.dot(D_I.T, D_I)), np.dot(D_I.T, x))
-        r = x - np.dot(D_I, alpha)
+
+        # update dictionary elements
+        D_orthogonal[:, k] = d
+        D = np.delete(D, j, 1)
+
+        # update I
+        I.append(orig_index[j])
+        orig_index[j:] = np.concatenate((orig_index[j+1:], [0]))  # update the orig index
+        D_I = D_orthogonal[:, 0:(k+1)]
+        alpha_I = alpha[I]
+
+        # solve for gamma using cholesky
+        # print L.shape, alpha_I.shape
+        x_ = sp.linalg.solve_triangular(L, alpha_I)
+        gamma_I = sp.linalg.solve_triangular(L, x_, trans=1)
+
+        # update the residue
+        r = x - np.dot(D_I, gamma_I)
         error = sqnorm(r)
         obj_values.append(error)
         k += 1
+        n += 1
 
+    alpha = np.zeros_like(alpha)
+    alpha[I] = alpha_I
     return alpha, obj_values
-    return
+
 
 def nth_largest(n, itr):
     return heapq.nlargest(n, itr)[-1]
